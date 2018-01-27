@@ -1,19 +1,11 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use Text::CSV;
+use Excel::Writer::XLSX;
+use DBI;
+use DBD::Pg;
 
-my $fn = "APD_Incident_Extract_YTD.csv";
-my $csv = Text::CSV->new();
-
-open(my $fh, '<', $fn) or die "Cannot open file: ";
-#my $x = 0;
-#while($x < 5){
-#  print "$x\n";
-#print $fh;
-#  $x++;
-#  }
-
+##Columns##
 my $A = "Incident Report Number";
 my $B = "Crime Type";
 my $C = "Date";
@@ -21,17 +13,49 @@ my $D = "Time";
 my $E = "Location_Type";
 my $F = "ADDRESS";
 
+##Crimes##
 my $RBT = "Robbery By Threat";
+
+##########
 my $AM = "AM";
 my $PM = "PM";
 
-$csv->column_names($csv->getline($fh));
-print "$RBT\n";
-while(my $row = $csv->getline_hr($fh)){
-$row->{$D} = ($row->{$D} > 1200 ? $row->{$D} % 1200 . $PM : $row->{$D}.$AM);
-#print "$row->{$D}\n";
+##Database Connect##
+my $db = "data";
+my $host = "";
+my $port = "5432";
+my $driver = "Pg";
+my $dsn = "DBI:$driver:database=$db;host=$host;port=$port";
+my $user = "postgres";
+my $pswd = "postgres";
 
-  if($row->{$B} =~ /$RBT/i){ 
-      if($row->{$D} =~ /(\d{1,2})(\d{2})([a-z]+)/i){print "$row->{$F}\t$row->{$C}\t$row->{$D}\t$1:$2 $3\n"; }}
-  }
+my $dbh = DBI->connect($dsn,$user,$pswd) 
+          or die "Can't connect to Database: $DBI::errstr\n";
+
+sub qwriter
+{
+  return "Select crime_type,
+                 count(report_number)
+		  From public.crime_incidents
+		  Group By crime_type
+				 ";
+}
+
+
+my $query = qwriter();		  
+
+my $sth = $dbh->prepare($query);
+$sth->execute();
+my $fn = 'output.xlsx';
+my $wb = Excel::Writer::XLSX->new($fn);
+
+my $row = 0;
+
+while(my @fields = $sth->fetchrow_array())
+{
+  for (@fields) { 
+    my $size = @fields;
+	}
+  $row++;
+}
 
