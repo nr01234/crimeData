@@ -5,21 +5,6 @@ use Excel::Writer::XLSX;
 use DBI;
 use DBD::Pg;
 
-##Columns##
-my $A = "Incident Report Number";
-my $B = "Crime Type";
-my $C = "Date";
-my $D = "Time";
-my $E = "Location_Type";
-my $F = "ADDRESS";
-
-##Crimes##
-my $RBT = "Robbery By Threat";
-
-##########
-my $AM = "AM";
-my $PM = "PM";
-
 ##Database Connect##
 my $db = "data";
 my $host = "";
