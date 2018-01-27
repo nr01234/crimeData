@@ -26,8 +26,8 @@ my $host = "";
 my $port = "5432";
 my $driver = "Pg";
 my $dsn = "DBI:$driver:database=$db;host=$host;port=$port";
-my $user = "postgres";
-my $pswd = "postgres";
+my $user = "";
+my $pswd = "";
 
 my $dbh = DBI->connect($dsn,$user,$pswd) 
           or die "Can't connect to Database: $DBI::errstr\n";
