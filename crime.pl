@@ -34,41 +34,28 @@ my $pswd = "postgres";
 
 my $dbh = DBI->connect($dsn,$user,$pswd) 
           or die "Can't connect to Database: $DBI::errstr\n";
+		  
+my $fn = 'output.xlsx';
+my $wb = Excel::Writer::XLSX->new($fn);
 
-my $crimes = qw /theft auto hate/;
+my @crimes = qw /theft auto hate assault intoxication/;
 
-sub qwriter
-{
-  return "Select crime_type,
-           count(report_number)
-		  From public.crime_incidents
-		  Where crime_type ~* '$theft'
-		  Group By crime_type
-				 ";
-}
+for my $crime (@crimes){ 
 
-sub x
-{
-  return "Select crime_type,
+  my $query = "Select crime_type,
            count(report_number) as number
           From public.crime_incidents
-		  Where crime_type ~* '$theft'
+		  Where crime_type ~* '$crime'
 		  Group By crime_type
 		  Order By number Desc
 		  Limit 10
 		  ";
-}
 
+  my $sth = $dbh->prepare($query);
+  $sth->execute();
 
-my $query = qwriter();	
-$query = x();	  
-
-my $sth = $dbh->prepare($query);
-$sth->execute();
-my $fn = 'output.xlsx';
-my $wb = Excel::Writer::XLSX->new($fn);
-my $ws = $wb->add_worksheet('Theft');
-my $bar = $wb->add_chart( type => 'column', name => 'Top 10 Types of Theft', embedded=> 1, title => { name => 'chartzzz' });
+my $ws = $wb->add_worksheet($crime);
+my $bar = $wb->add_chart( type => 'column', embedded=> 1, title => { name => 'chartzzz' });
 
 $ws->set_column(0, 0, 35);
 
@@ -86,9 +73,13 @@ while(my @fields = $sth->fetchrow_array())
 }
 
 $bar->add_series(
-  categories => '=sheet1!$A$1:$A$5',
-  values => '=sheet1!$B$1:$B$5'
+  name => $crime,
+  categories => '='.$crime.'!$A$1:$A$5',
+  values => '='.$crime.'!$B$1:$B$5'
 );
-
+$bar->set_title(name => 'Top 5 Types of '.$crime );
+$bar->set_x_axis(name => 'Type of '.$crime);
+$bar->set_y_axis(name => 'Number of Crimes');
 $ws->insert_chart( 'C1', $bar);
+}
 
