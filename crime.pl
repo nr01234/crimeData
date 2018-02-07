@@ -25,7 +25,7 @@ my $PM = "PM";
 
 ##Database Connect##
 my $db = "austin_data";
-my $host = "192.168.0.2";
+my $host = "";
 my $port = "5432";
 my $driver = "Pg";
 my $dsn = "DBI:$driver:database=$db;host=$host;port=$port";
